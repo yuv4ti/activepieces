@@ -1,20 +1,36 @@
 /// <reference types='vitest' />
+import { defineConfig } from 'vite';
+import { createHtmlPlugin } from 'vite-plugin-html';
+import react from '@vitejs/plugin-react';
+import checker from 'vite-plugin-checker';
 import path from 'path';
+import fs from 'fs';
 
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
-import checker from 'vite-plugin-checker';
-import { createHtmlPlugin } from 'vite-plugin-html';
 
 export default defineConfig(({ command, mode }) => {
-  const isDev = command === 'serve' || mode === 'development';
+  // Load environment variables from .env file
+  let envVars: Record<string, string> = {};
+  try {
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      envVars = envContent.split('\n').reduce((acc, line) => {
+        const [key, ...values] = line.split('=');
+        if (key && values.length) {
+          acc[key] = values.join('=').replace(/"/g, '');
+        }
+        return acc;
+      }, {} as Record<string, string>);
+    }
+  } catch (error) {
+    console.warn('Could not load .env file:', error);
+  }
 
-  const AP_TITLE = isDev ? 'Activepieces' : '${AP_APP_TITLE}';
-
-  const AP_FAVICON = isDev
-    ? 'https://activepieces.com/favicon.ico'
-    : '${AP_FAVICON_URL}';
+  // Use environment variables with fallbacks
+  const AP_TITLE = envVars.AP_APP_TITLE || 'Activepiejjces';
+  const AP_FAVICON = envVars.AP_FAVICON_URL || 'https://activepieces.com/favicon.ico';
+  const AP_BRAND_NAME = envVars.AP_BRAND_NAME || 'activepieces';
 
   return {
     root: __dirname,
@@ -71,6 +87,7 @@ export default defineConfig(({ command, mode }) => {
           data: {
             apTitle: AP_TITLE,
             apFavicon: AP_FAVICON,
+            apBrandName: AP_BRAND_NAME,
           },
         },
       }),

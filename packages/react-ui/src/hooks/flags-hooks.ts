@@ -31,7 +31,26 @@ export const flagsHooks = {
   },
   useWebsiteBranding: () => {
     const { data: theme } = flagsHooks.useFlag<WebsiteBrand>(ApFlagId.THEME);
-    return theme!;
+
+    // Use environment-based branding as fallback or override
+    const envBrandName = (window as any).apBrandName;
+    const envFavIcon = (window as any).apFavicon;
+
+    return {
+      websiteName: envBrandName || theme?.websiteName || 'Activepieces',
+      logos: {
+        fullLogoUrl: envFavIcon || theme?.logos?.fullLogoUrl || '/assets/ap-logo.png',
+        favIconUrl: envFavIcon || theme?.logos?.favIconUrl || envFavIcon,
+        logoIconUrl: theme?.logos?.logoIconUrl || '/assets/ap-logo.png',
+      },
+      colors: theme?.colors || {
+        primary: {
+          default: '#8B5CF6',
+          dark: '#7C3AED',
+          light: '#A78BFA',
+        },
+      },
+    };
   },
   useFlag: <T>(flagId: ApFlagId) => {
     const data = useSuspenseQuery<FlagsMap, Error>({

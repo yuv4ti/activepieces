@@ -1,20 +1,20 @@
-FROM node:18.20.5-bullseye-slim AS base
+FROM node:20.18.1-bullseye-slim AS base
 
 # Use a cache mount for apt to speed up the process
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-        openssh-client \
-        python3 \
-        g++ \
-        build-essential \
-        git \
-        poppler-utils \
-        poppler-data \
-        procps && \
-    yarn config set python /usr/bin/python3 && \
-    npm install -g node-gyp
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  openssh-client \
+  python3 \
+  g++ \
+  build-essential \
+  git \
+  poppler-utils \
+  poppler-data \
+  procps && \
+  yarn config set python /usr/bin/python3 && \
+  npm install -g node-gyp
 RUN npm i -g npm@9.9.3 pnpm@9.15.0 pm2@6.0.10
 
 # Set the locale
@@ -25,16 +25,16 @@ ENV NX_DAEMON=false
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
-    locales \
-    locales-all \
-    libcap-dev \
- && rm -rf /var/lib/apt/lists/*
+  locales \
+  locales-all \
+  libcap-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 # install isolated-vm in a parent directory to avoid linking the package in every sandbox
 RUN cd /usr/src && npm i isolated-vm@5.0.1
 
-RUN pnpm store add @tsconfig/node18@1.0.0
-RUN pnpm store add @types/node@18.17.1
+RUN pnpm store add @tsconfig/node20@20.1.2
+RUN pnpm store add @types/node@20.17.1
 
 RUN pnpm store add typescript@4.9.4
 
